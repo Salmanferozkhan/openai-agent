@@ -16,7 +16,7 @@ This project demonstrates how to create and run a simple AI agent using the `ope
 
 1. Install dependencies:
    ```bash
-   pip install -e .
+   uv sync
    ```
 
 2. Create a `.env` file in the project root with your API key:
@@ -26,7 +26,7 @@ This project demonstrates how to create and run a simple AI agent using the `ope
 
 3. Run the agent:
    ```bash
-   python main.py
+   uv run main.py
    ```
 
 ## Dependencies
