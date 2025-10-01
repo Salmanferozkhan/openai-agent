@@ -24,6 +24,13 @@ Examples and configurations for different agent setups.
 - Global-level settings
 - Run-level parameters
 
+### 🚀 [Azure DevOps Agent](./azuredevops_agent/)
+An intelligent agent that manages Azure DevOps releases automatically.
+- Retrieve projects and release definitions
+- Create releases from release definitions by name
+- Integration with Azure DevOps Python SDK
+- Natural language release management
+
 ## Prerequisites
 
 - Python 3.13 or higher
@@ -43,6 +50,8 @@ cd openai-agent
 cd hello_agent
 # or
 cd websearch_agent
+# or
+cd azuredevops_agent
 ```
 
 3. Install dependencies:
@@ -69,12 +78,14 @@ python main.py
 1. **Start with Hello Agent** - Understand basic agent concepts
 2. **Explore WebSearch Agent** - Learn about tool integration and external APIs
 3. **Review Agent Configurations** - Understand different configuration patterns
+4. **Try Azure DevOps Agent** - Learn how to integrate with enterprise APIs and manage complex workflows
 
 ## Technologies Used
 
 - **OpenAI Agents SDK** - Core agent framework
 - **Gemini 2.5 Flash** - Language model
 - **Tavily API** - Web search functionality
+- **Azure DevOps Python SDK** - Azure DevOps integration
 - **Python 3.13** - Programming language
 - **UV** - Package management
 
