@@ -105,7 +105,6 @@ When the user asks to create a release:
 IMPORTANT: You must call get_release_definitions first, even if the user provides a release name.
 """
 agent:Agent = Agent(name="Azure DevOps", instructions=instructions, model=llm_model, tools=[get_release_definitions, create_release])
-result = Runner.run_sync(agent,"Create a release for folio3.burq-cirbasolutions.dev-consumer-Development")
+result = Runner.run_sync(agent,"Create a release for test project")
 pprint.pprint(result.final_output)
 
-#pprint.pprint(create_release('ComAXProduct', 264))
