@@ -41,7 +41,36 @@ GEMINI_API_KEY=your_gemini_api_key
 
 ## Usage
 
-### Basic Example
+### Option 1: Chainlit Web UI (Recommended)
+
+Run the interactive web interface:
+
+```bash
+uv run chainlit run app.py -w
+```
+
+Then open your browser at `http://localhost:8000`
+
+The Chainlit UI provides:
+- 💬 Interactive chat interface
+- 🎯 Natural language commands
+- 📊 Real-time responses
+- 🎨 Beautiful, user-friendly interface
+
+**Example commands to try:**
+- "List all release definitions"
+- "Create a release for backend-api-production"
+- "Show me all production releases"
+
+### Option 2: Command Line (main.py)
+
+Run the agent directly from the command line:
+
+```bash
+uv run python main.py
+```
+
+### Option 3: Python Script
 
 ```python
 from main import get_azure_projectname, get_release_definitions, create_release
@@ -139,9 +168,11 @@ I have created a release for `backend-api-production` with the name `Release-3`.
 
 ```
 azuredevops_agent/
-├── main.py              # Main application with agent and tools
+├── app.py               # Chainlit web UI application
+├── main.py              # CLI application with agent and tools
 ├── .env                 # Environment variables (not committed)
 ├── pyproject.toml       # Project dependencies
+├── .chainlit/           # Chainlit configuration (auto-generated)
 └── README.md           # This file
 ```
 
