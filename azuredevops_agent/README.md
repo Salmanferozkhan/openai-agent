@@ -55,7 +55,7 @@ definitions = get_release_definitions()
 print(definitions)
 
 # Create a release
-release = create_release(definition_id=264)
+release = create_release(definition_id=12)
 print(release)
 ```
 
@@ -84,7 +84,7 @@ agent = Agent(
 
 result = Runner.run_sync(
     agent,
-    "Create a release for folio3.burq-cirbasolutions.dev-consumer-Development"
+    "Create a release for backend-api-production"
 )
 print(result.final_output)
 ```
@@ -127,12 +127,12 @@ This project uses the following Azure DevOps Python SDK methods:
 ## Example Output
 
 ```bash
-Project name: ComAXProduct
-TOOL CALLING - Getting release definitions for project ComAXProduct
-Found 386 release definitions
-TOOL CALLING - Creating release for project ComAXProduct with definition id 264
-Release created: Release-25
-I have created a release for `folio3.burq-cirbasolutions.dev-consumer-Development` with the name `Release-25`.
+Project name: MyDevOpsProject
+TOOL CALLING - Getting release definitions for project MyDevOpsProject
+Found 45 release definitions
+TOOL CALLING - Creating release for project MyDevOpsProject with definition id 12
+Release created: Release-3
+I have created a release for `backend-api-production` with the name `Release-3`.
 ```
 
 ## Project Structure
