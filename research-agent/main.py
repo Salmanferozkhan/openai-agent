@@ -28,7 +28,9 @@ def websearch(query:str):
     """
     Search the web for the query
     """
-    print(f"[TOOL] Searching the web for: {query}")
+    from rich.console import Console
+    console = Console()
+    console.print(f"[bold blue][TOOL][/bold blue] Searching the web for: [cyan]{query}[/cyan]")
     response = tavily_client.search(f"{query}")
     return response
 
@@ -150,9 +152,18 @@ async def call_agent():
     Flow:
     User → Triage Agent → Research Agent → Analyst Agent → Writer Agent → Report
     """
-    print("\n" + "="*80)
-    print("🤖 Multi-Agent Research System")
-    print("="*80 + "\n")
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.text import Text
+
+    console = Console()
+
+    console.print("\n")
+    console.print(Panel.fit(
+        "[bold cyan]🤖 Multi-Agent Research System[/bold cyan]",
+        border_style="cyan"
+    ))
+    console.print()
 
     # Call the triage agent which will coordinate all other agents
     output = Runner.run_streamed(
@@ -162,15 +173,15 @@ async def call_agent():
 
     # Collect the result with streaming
     result_text = ""
-    print("📝 Generating report (streaming)...\n")
-    print("-" * 80)
+    console.print("[bold yellow]📝 Generating report (streaming)...[/bold yellow]\n")
+    console.print("─" * 80, style="dim")
 
     async for event in output.stream_events():
         if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
             print(event.data.delta, end="", flush=True)
             result_text += event.data.delta
 
-    print("\n" + "-" * 80)
+    console.print("\n" + "─" * 80, style="dim")
 
     # Create output directory if it doesn't exist
     os.makedirs("output", exist_ok=True)
@@ -179,8 +190,12 @@ async def call_agent():
     with open("output/report.md", "w", encoding="utf-8") as f:
         f.write(result_text)
 
-    print(f"\n✓ Report saved to output/report.md")
-    print("="*80 + "\n")
+    console.print()
+    console.print(Panel(
+        "[bold green]✓ Report saved to output/report.md[/bold green]",
+        border_style="green"
+    ))
+    console.print()
 
 if __name__ == "__main__":
     asyncio.run(call_agent())
