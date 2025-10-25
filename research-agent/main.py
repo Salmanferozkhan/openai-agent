@@ -63,12 +63,14 @@ research_agent = Agent(
        - What specific results did they achieve? (e.g., "50% faster", "$2M saved")
        - What are the exact inputs and outputs of the agent?
 
-    5. Hand off ONE well-documented use case to the Analyst Agent
+    5. After collecting all information, hand off to the Analyst Agent by using the handoff tool
 
     IMPORTANT: Find ONE clear example with real numbers and official sources. Don't give generic information.
+    After research is complete, use the handoff tool to transfer to Analyst Agent.
     """,
     model=llm_model,
-    tools=[websearch]
+    tools=[websearch],
+    handoffs=[]  # Will be set after all agents are defined
 )
 
 # 2. Analyst Agent - Analyzes the research data
@@ -111,9 +113,11 @@ analyst_agent = Agent(
     5. Hand off structured answers to Writer Agent
 
     IMPORTANT: Focus on concrete, measurable data. Use real numbers whenever possible.
+    After analysis is complete, hand off to Writer Agent.
     """,
     model=llm_model,
-    tools=[]
+    tools=[],
+    handoffs=[]  # Will be set after all agents are defined
 )
 
 # 3. Writer Agent - Writes the final report
@@ -193,6 +197,10 @@ writer_agent = Agent(
     tools=[]
 )
 
+# Set up handoffs now that all agents are defined
+research_agent.handoffs = [analyst_agent]
+analyst_agent.handoffs = [writer_agent]
+
 # 4. Triage Agent - Routes the initial request
 triage_agent = Agent(
     name="Triage Agent",
@@ -208,7 +216,7 @@ triage_agent = Agent(
     Always start by handing off to the Research Agent.
     """,
     model=llm_model,
-    handoffs=[research_agent, analyst_agent, writer_agent]
+    handoffs=[research_agent]
 )
 
 # =============== MAIN EXECUTION ===============
@@ -228,28 +236,29 @@ async def call_agent():
 
     console.print("\n")
     console.print(Panel.fit(
-        "[bold cyan]🤖 Multi-Agent Research System[/bold cyan]",
+        "[bold cyan]Multi-Agent Research System[/bold cyan]",
         border_style="cyan"
     ))
     console.print()
 
-    # Call the triage agent which will coordinate all other agents
+    # Call the research agent which will hand off to analyst then writer
     output = Runner.run_streamed(
-        starting_agent=triage_agent,
-        input="Find a real-world use case where an agentic AI is being used right now"
+        starting_agent=research_agent,
+        input="Find ONE real-world use case where an agentic AI is being used right now with specific measurable results",
+        max_turns=20
     )
 
     # Collect the result with streaming
     result_text = ""
-    console.print("[bold yellow]📝 Generating report (streaming)...[/bold yellow]\n")
-    console.print("─" * 80, style="dim")
+    console.print("[bold yellow]Generating report (streaming)...[/bold yellow]\n")
+    console.print("-" * 80, style="dim")
 
     async for event in output.stream_events():
         if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
             print(event.data.delta, end="", flush=True)
             result_text += event.data.delta
 
-    console.print("\n" + "─" * 80, style="dim")
+    console.print("\n" + "-" * 80, style="dim")
 
     # Create output directory if it doesn't exist
     os.makedirs("output", exist_ok=True)
@@ -260,7 +269,7 @@ async def call_agent():
 
     console.print()
     console.print(Panel(
-        "[bold green]✓ Report saved to output/report.md[/bold green]",
+        "[bold green]Report saved to output/report.md[/bold green]",
         border_style="green"
     ))
     console.print()
