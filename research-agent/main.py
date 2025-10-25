@@ -21,79 +21,156 @@ llm_model = OpenAIChatCompletionsModel(
     model="gemini-2.5-flash",
     openai_client=external_client)
 
+# =============== TOOLS ===============
+
 @function_tool
 def websearch(query:str):
- """
- Search the web for the query
- """
- print(f"TOOL CALLING - Searching the web for {query}")
- response = tavily_client.search(f"{query}")
- print(response)
- return response
+    """
+    Search the web for the query
+    """
+    print(f"[TOOL] Searching the web for: {query}")
+    response = tavily_client.search(f"{query}")
+    return response
 
-instructions="""
-You are an AI research assistant tasked with finding and explaining a real-world use case where an agentic AI is being used right now.
+# =============== AGENTS ===============
 
-1. **Research a real-world use case**: Look for a company or workflow where agentic AI is currently being used. This can be in fields like warehouse robots, customer service automation, fraud detection, etc.
+# 1. Research Agent - Searches the web for information
+research_agent = Agent(
+    name="Research Agent",
+    instructions="""
+    You are a Research Agent specialized in finding real-world use cases of agentic AI.
 
-2. **Provide a summary with the following details**:
-    - **Company name**: (The name of the company using AI agents)
-    - **What problem they had**: (Explain the task that was taking a lot of time or money before the AI agent was introduced)
-    - **What the agent does**: (What does the AI agent do, what inputs does it receive, and what outputs does it create?)
-    - **Where you found this information**: (Provide a link or source, e.g., a news article, company blog, YouTube video, etc.)
+    Your job:
+    1. Perform 3-4 different web searches to gather comprehensive information about agentic AI use cases
+    2. Search for:
+       - Companies using AI agents in production
+       - Real-world implementations with measurable results
+       - Different industries (warehouse, customer service, fraud detection, etc.)
+       - Recent news and case studies
+    3. Collect raw data from multiple sources
+    4. Hand off all your findings to the Analyst Agent for analysis
 
-3. **Answer the following 5 questions in detail**:
+    Be thorough and search from multiple angles. Don't analyze yet - just gather information.
+    """,
+    model=llm_model,
+    tools=[websearch]
+)
 
-    **Question 1: What Was the Problem?**
-    - What task was taking lots of time/money before the agent was used?
-    - How many people were doing this task manually?
-    - What was costing the company (e.g., labor costs, time delays, etc.)?
+# 2. Analyst Agent - Analyzes the research data
+analyst_agent = Agent(
+    name="Analyst Agent",
+    instructions="""
+    You are an Analyst Agent specialized in analyzing agentic AI use cases.
 
-    **Question 2: What Agent Did They Build?**
-    - What does the agent do (be specific about its task)?
-    - What inputs does the agent receive (e.g., instructions, data, etc.)?
-    - What outputs does the agent create (e.g., actions taken, results produced)?
+    Your job:
+    1. Receive research data from the Research Agent
+    2. Pick the BEST real-world use case from the data
+    3. Extract and structure key information:
+       - Company name and problem
+       - What the agent does (inputs/outputs)
+       - Human oversight mechanisms
+       - Measurable results (numbers, percentages)
+       - Why it worked
+    4. Verify facts and ensure data quality
+    5. Hand off structured findings to the Writer Agent
 
-    **Question 3: How Do Humans Stay in Control?**
-    - Do humans still make decisions? If so, in what capacity?
-    - What do humans check or approve during the process?
-    - What happens if something goes wrong (e.g., robot failure, system malfunction)?
+    Focus on finding concrete numbers and measurable impacts. Choose a use case with clear, verifiable results.
+    """,
+    model=llm_model,
+    tools=[]
+)
 
-    **Question 4: What Results Did They Get?**
-    - What improved after the agent was implemented (speed, cost, quality)?
-    - By how much did it improve? Provide specific numbers or percentages if available.
-    - How did this help the business overall (e.g., increased revenue, reduced costs)?
+# 3. Writer Agent - Writes the final report
+writer_agent = Agent(
+    name="Writer Agent",
+    instructions="""
+    You are a Writer Agent specialized in creating clear, simple reports.
 
-    **Question 5: Why Did This Work?**
-    - Why was this job particularly suited for an AI agent (e.g., repetitive tasks, structured data)?
-    - What made it easier or harder than other tasks for the AI to handle?
-    - Would this solution work for other companies or industries? Explain why or why not.
+    Your job:
+    1. Receive structured findings from the Analyst Agent
+    2. Write a comprehensive report in Grade 10 level language
+    3. Use this EXACT structure:
 
-4. **Output format**:
-   Write your findings in a simple, understandable format that a grade 10 student could easily grasp. Use bullet points for clarity where necessary.
-   - Heading 1: Company name and the problem faced
-   - Heading 2: What the agent does and how humans stay in control?
-   - Heading 3: What measurable results they got
-   - Heading 4: Why this matters
-   - Heading 5: Include at least ONE source or link to the information used (news article, YouTube video, company report, etc.)
+       # [Company Name]: Real-World AI Agent Implementation
 
-Please provide detailed, but simple explanations. Use clear and concise language. If possible, include any numbers or measurable impacts that show how the agent has made a difference.
-"""
-agent:Agent = Agent(name="Research", instructions=instructions, model=llm_model, tools=[websearch])
+       ## 1. The Problem They Faced
+       [Clear explanation of the problem, costs, and manual effort]
+
+       ## 2. The AI Agent Solution
+       ### What the Agent Does:
+       - Input: [what data/instructions it receives]
+       - Process: [what it does]
+       - Output: [what results it creates]
+
+       ### Human Oversight:
+       [How humans stay in control and what they monitor]
+
+       ## 3. Measurable Results
+       [Specific numbers, percentages, and improvements]
+
+       ## 4. Why This Worked
+       [Analysis of why AI was suited for this task]
+
+       ## 5. Sources
+       [Links to sources]
+
+    4. Use simple language, bullet points, and clear formatting
+    5. Include ALL specific numbers and percentages from the analysis
+
+    Write clearly and concisely. Make it easy to understand for a grade 10 student.
+    """,
+    model=llm_model,
+    tools=[]
+)
+
+# 4. Triage Agent - Routes the initial request
+triage_agent = Agent(
+    name="Triage Agent",
+    instructions="""
+    You are a Triage Agent that coordinates the research workflow.
+
+    When user asks to find agentic AI use cases:
+    1. Hand off to Research Agent to gather information
+    2. Research Agent will hand off to Analyst Agent
+    3. Analyst Agent will hand off to Writer Agent
+    4. Writer Agent will create the final report
+
+    Always start by handing off to the Research Agent.
+    """,
+    model=llm_model,
+    handoffs=[research_agent, analyst_agent, writer_agent]
+)
+
+# =============== MAIN EXECUTION ===============
 
 async def call_agent():
-    # Call the agent with a specific input
-    output = Runner.run_streamed(
-        starting_agent=agent,
-        input="Find a real-world use case where an agentic AI is being used right now"
-        )
+    """
+    Multi-Agent Research System with Streaming
 
-    # Collect the result
+    Flow:
+    User → Triage Agent → Research Agent → Analyst Agent → Writer Agent → Report
+    """
+    print("\n" + "="*80)
+    print("🤖 Multi-Agent Research System")
+    print("="*80 + "\n")
+
+    # Call the triage agent which will coordinate all other agents
+    output = Runner.run_streamed(
+        starting_agent=triage_agent,
+        input="Find a real-world use case where an agentic AI is being used right now"
+    )
+
+    # Collect the result with streaming
     result_text = ""
+    print("📝 Generating report (streaming)...\n")
+    print("-" * 80)
+
     async for event in output.stream_events():
-       if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
             print(event.data.delta, end="", flush=True)
             result_text += event.data.delta
+
+    print("\n" + "-" * 80)
 
     # Create output directory if it doesn't exist
     os.makedirs("output", exist_ok=True)
@@ -102,6 +179,8 @@ async def call_agent():
     with open("output/report.md", "w", encoding="utf-8") as f:
         f.write(result_text)
 
-    print(f"\n\n✓ Report saved to output/report.md")
+    print(f"\n✓ Report saved to output/report.md")
+    print("="*80 + "\n")
 
-asyncio.run(call_agent())
+if __name__ == "__main__":
+    asyncio.run(call_agent())
