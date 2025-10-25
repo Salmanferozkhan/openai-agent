@@ -10,7 +10,8 @@
       "Bash(uv sync:*)",
       "Bash(winget install:*)",
       "Bash(where:*)",
-      "Bash(uv add:*)"
+      "Bash(uv add:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
