@@ -31,6 +31,30 @@ An intelligent agent that manages Azure DevOps releases automatically.
 - Integration with Azure DevOps Python SDK
 - Natural language release management
 
+### 🔧 [Tools and Handoffs Agent](./toolsAndHandsOff/)
+A demonstration of OpenAI Agents SDK with Google's Gemini model integration.
+- Basic agent setup with external LLM provider
+- Environment variable configuration
+- Simple agent architecture patterns
+
+### 🔎 [File Search Agent](./filesearch_agent/)
+An agent that searches and analyzes files for specific information.
+- File search and content analysis
+- Documentation generation capabilities
+- Integration with file system operations
+
+### 📊 [Research Agent](./research-agent/)
+A web research agent for gathering and analyzing information.
+- Web research and information retrieval
+- Report generation
+- Structured output formatting
+
+### 🎯 [Practice Examples](./practice/)
+Practice implementations and examples for learning agent development.
+- Shopify GraphQL API integration examples
+- Hands-on practice code
+- Learning resources
+
 ## Prerequisites
 
 - Python 3.13 or higher
@@ -52,6 +76,12 @@ cd hello_agent
 cd websearch_agent
 # or
 cd azuredevops_agent
+# or
+cd toolsAndHandsOff
+# or
+cd filesearch_agent
+# or
+cd research-agent
 ```
 
 3. Install dependencies:
@@ -76,9 +106,13 @@ python main.py
 ## Learning Path
 
 1. **Start with Hello Agent** - Understand basic agent concepts
-2. **Explore WebSearch Agent** - Learn about tool integration and external APIs
-3. **Review Agent Configurations** - Understand different configuration patterns
-4. **Try Azure DevOps Agent** - Learn how to integrate with enterprise APIs and manage complex workflows
+2. **Try Tools and Handoffs Agent** - Learn agent setup with external LLM providers
+3. **Explore WebSearch Agent** - Learn about tool integration and external APIs
+4. **Practice with Examples** - Work through practice implementations
+5. **Try File Search Agent** - Learn file operations and content analysis
+6. **Build Research Agent** - Create agents for web research and reporting
+7. **Review Agent Configurations** - Understand different configuration patterns
+8. **Try Azure DevOps Agent** - Learn how to integrate with enterprise APIs and manage complex workflows
 
 ## Technologies Used
 
