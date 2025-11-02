@@ -43,29 +43,25 @@ research_agent = Agent(
     You are a Research Agent specialized in finding ONE specific real-world use case of agentic AI.
 
     Your job:
-    1. Perform 3-4 targeted web searches to find ONE documented company using AI agents
-    2. Focus on finding companies from these categories:
-       - Amazon warehouse robots
-       - Bank fraud detection (JPMorgan, etc.)
-       - Customer service automation (Salesforce, IBM Watson)
-       - Manufacturing quality control (Siemens, BMW, Toyota)
-       - Netflix/Uber recommendations and optimization
-
-    3. For the company you find, search for:
+    1. Perform 3-4 targeted web searches to find ONE documented company using AI agents.
+    2. Use the websearch tool to search the web for the information.
+    3. Make sure to Search on integration niche.
+    4. For the company you find, search for:
        - Company name and specific AI agent implementation
        - The problem they had BEFORE using AI agents
        - Measurable results (numbers, percentages, cost savings)
        - Official sources (company blog, news articles, case studies)
 
-    4. Collect concrete data:
+    5. Collect concrete data:
        - How many people were doing this manually?
        - What was the cost/time before?
        - What specific results did they achieve? (e.g., "50% faster", "$2M saved")
        - What are the exact inputs and outputs of the agent?
 
-    5. After collecting all information, hand off to the Analyst Agent by using the handoff tool
+    6. After collecting all information, hand off to the Analyst Agent by using the handoff tool
 
     IMPORTANT: Find ONE clear example with real numbers and official sources. Don't give generic information.
+    Agentic AI use case is MUST for the report.
     After research is complete, use the handoff tool to transfer to Analyst Agent.
     """,
     model=llm_model,
@@ -77,56 +73,7 @@ research_agent = Agent(
 analyst_agent = Agent(
     name="Analyst Agent",
     instructions="""
-    You are an Analyst Agent specialized in analyzing agentic AI use cases for grade 10 students.
-
-    Your job:
-    1. Receive the company/use case from Research Agent
-    2. Structure the information to answer these 5 EXACT questions:
-
-       **Question 1: What Was the Problem?**
-       - What task was taking lots of time/money before the agent?
-       - How many people were doing this manually?
-       - What was costing the company?
-
-       **Question 2: What Agent Did They Build?**
-       - What does the agent do (be specific)?
-       - What inputs does it get?
-       - What outputs does it create?
-
-       **Question 3: How Do Humans Stay in Control?**
-       - Do humans still make decisions? How?
-       - What do humans check or approve?
-       - What happens if something goes wrong?
-
-       **Question 4: What Results Did They Get?**
-       - What improved? (speed, cost, quality)
-       - By how much? (SPECIFIC NUMBERS/PERCENTAGES)
-       - How did this help the business?
-
-       **Question 5: Why Did This Work?**
-       - Why was this job good for an agent?
-       - What made it easier/harder than other tasks?
-       - Would this work for other companies?
-
-    3. Extract SPECIFIC NUMBERS and PERCENTAGES
-    4. Ensure facts are verifiable
-    5. Hand off structured answers to Writer Agent
-
-    IMPORTANT: Focus on concrete, measurable data. Use real numbers whenever possible.
-    After analysis is complete, hand off to Writer Agent.
-    """,
-    model=llm_model,
-    tools=[],
-    handoffs=[]  # Will be set after all agents are defined
-)
-
-# 3. Writer Agent - Writes the final report
-writer_agent = Agent(
-    name="Writer Agent",
-    instructions="""
-    You are a Writer Agent specialized in creating ONE-PAGE summaries for grade 10 students.
-
-    Your job:
+   Your job:
     1. Receive the 5 questions and answers from Analyst Agent
     2. Write a ONE-PAGE summary using this EXACT format:
 
@@ -194,12 +141,12 @@ writer_agent = Agent(
     Your goal: A grade 10 student should easily understand this in 5 minutes.
     """,
     model=llm_model,
-    tools=[]
+    tools=[],
+    handoffs=[]  # Will be set after all agents are defined
 )
 
 # Set up handoffs now that all agents are defined
 research_agent.handoffs = [analyst_agent]
-analyst_agent.handoffs = [writer_agent]
 
 # 4. Triage Agent - Routes the initial request
 triage_agent = Agent(
@@ -210,8 +157,7 @@ triage_agent = Agent(
     When user asks to find agentic AI use cases:
     1. Hand off to Research Agent to gather information
     2. Research Agent will hand off to Analyst Agent
-    3. Analyst Agent will hand off to Writer Agent
-    4. Writer Agent will create the final report
+    3. Analyst Agent will create the final report
 
     Always start by handing off to the Research Agent.
     """,
@@ -226,7 +172,7 @@ async def call_agent():
     Multi-Agent Research System with Streaming
 
     Flow:
-    User → Triage Agent → Research Agent → Analyst Agent → Writer Agent → Report
+    User → Triage Agent → Research Agent → Analyst Agent → Report
     """
     from rich.console import Console
     from rich.panel import Panel
@@ -244,7 +190,7 @@ async def call_agent():
     # Call the research agent which will hand off to analyst then writer
     output = Runner.run_streamed(
         starting_agent=research_agent,
-        input="Find ONE real-world use case where an agentic AI is being used right now with specific measurable results",
+        input="Find ONE real-world use case where an agentic AI is being used right now with specific measurable results in E-commerce Fashion niche 2025",
         max_turns=20
     )
 
