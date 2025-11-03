@@ -1,9 +1,11 @@
 import os
+import asyncio
 from dotenv import load_dotenv, find_dotenv
 from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI, set_tracing_disabled,function_tool
 from azure.devops.connection import Connection
 from msrest.authentication import BasicAuthentication
 from azure.devops.v7_0.release.models import ReleaseStartMetadata
+from openai.types.responses import ResponseTextDeltaEvent
 import pprint
 
 load_dotenv(find_dotenv())
@@ -105,6 +107,35 @@ When the user asks to create a release:
 IMPORTANT: You must call get_release_definitions first, even if the user provides a release name.
 """
 agent:Agent = Agent(name="Azure DevOps", instructions=instructions, model=llm_model, tools=[get_release_definitions, create_release])
-result = Runner.run_sync(agent,"Create a release for test project")
-pprint.pprint(result.final_output)
+
+async def run_agent_with_streaming():
+    """
+    Run the Azure DevOps agent with streaming output
+    """
+    print("\n" + "="*80)
+    print("Azure DevOps Release Agent - Streaming Mode")
+    print("="*80 + "\n")
+
+    output = Runner.run_streamed(
+        starting_agent=agent,
+        input="Create a release for test project",
+        max_turns=10
+    )
+
+    result_text = ""
+    print("Agent Response (streaming):")
+    print("-" * 80)
+
+    async for event in output.stream_events():
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            print(event.data.delta, end="", flush=True)
+            result_text += event.data.delta
+
+    print("\n" + "-" * 80)
+    print("\nFinal Output:")
+    print(result_text)
+    print("\n" + "="*80 + "\n")
+
+if __name__ == "__main__":
+    asyncio.run(run_agent_with_streaming())
 

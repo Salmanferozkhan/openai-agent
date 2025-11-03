@@ -7,6 +7,9 @@ An intelligent agent that interacts with Azure DevOps APIs to manage releases au
 - **Get Projects**: Retrieve all Azure DevOps projects from your organization
 - **Get Release Definitions**: List all release definitions for a specific project
 - **Create Releases**: Automatically create releases from release definitions by name
+- **Real-time Streaming**: See agent responses in real-time as they're generated
+- **Chainlit UI**: Beautiful web interface for natural language interactions
+- **Async Support**: Fully asynchronous implementation for better performance
 
 ## Prerequisites
 
@@ -54,21 +57,27 @@ Then open your browser at `http://localhost:8000`
 The Chainlit UI provides:
 - 💬 Interactive chat interface
 - 🎯 Natural language commands
-- 📊 Real-time responses
+- 📊 Real-time streaming responses
 - 🎨 Beautiful, user-friendly interface
+- ⚡ Live updates as the agent thinks and responds
 
 **Example commands to try:**
 - "List all release definitions"
 - "Create a release for backend-api-production"
 - "Show me all production releases"
 
-### Option 2: Command Line (main.py)
+### Option 2: Command Line with Streaming (main.py)
 
-Run the agent directly from the command line:
+Run the agent directly from the command line with real-time streaming output:
 
 ```bash
 uv run python main.py
 ```
+
+Features:
+- 🔄 Real-time streaming responses
+- 📝 See agent thinking process live
+- 💾 Saves final output for review
 
 ### Option 3: Python Script
 
@@ -88,13 +97,15 @@ release = create_release(definition_id=12)
 print(release)
 ```
 
-### Using the Agent
+### Using the Agent with Streaming
 
-The agent can automatically find and create releases based on natural language requests:
+The agent can automatically find and create releases based on natural language requests with real-time streaming:
 
 ```python
+import asyncio
 from agents import Agent, Runner
 from main import get_release_definitions, create_release, llm_model
+from openai.types.responses import ResponseTextDeltaEvent
 
 agent = Agent(
     name="Azure DevOps",
@@ -111,11 +122,18 @@ agent = Agent(
     tools=[get_release_definitions, create_release]
 )
 
-result = Runner.run_sync(
-    agent,
-    "Create a release for backend-api-production"
-)
-print(result.final_output)
+async def run_with_streaming():
+    output = Runner.run_streamed(
+        starting_agent=agent,
+        input="Create a release for backend-api-production",
+        max_turns=10
+    )
+
+    async for event in output.stream_events():
+        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+            print(event.data.delta, end="", flush=True)
+
+asyncio.run(run_with_streaming())
 ```
 
 ## API Reference
@@ -155,14 +173,33 @@ This project uses the following Azure DevOps Python SDK methods:
 
 ## Example Output
 
+### CLI Streaming Output:
 ```bash
-Project name: MyDevOpsProject
-TOOL CALLING - Getting release definitions for project MyDevOpsProject
-Found 45 release definitions
-TOOL CALLING - Creating release for project MyDevOpsProject with definition id 12
-Release created: Release-3
+================================================================================
+Azure DevOps Release Agent - Streaming Mode
+================================================================================
+
+Agent Response (streaming):
+--------------------------------------------------------------------------------
+I'll help you create a release for the test project. Let me first get all available release definitions...
+
+[Agent retrieves definitions in real-time]
+
+Found 45 release definitions. Looking for 'test project'...
+
+Creating release for definition ID 12...
+
+Successfully created Release-3 for backend-api-production!
+--------------------------------------------------------------------------------
+
+Final Output:
 I have created a release for `backend-api-production` with the name `Release-3`.
+
+================================================================================
 ```
+
+### Chainlit UI:
+The web interface shows the same streaming output in a beautiful chat interface with real-time updates.
 
 ## Project Structure
 

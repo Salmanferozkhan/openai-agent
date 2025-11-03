@@ -5,6 +5,7 @@ from agents import Agent, Runner, OpenAIChatCompletionsModel, AsyncOpenAI, set_t
 from azure.devops.connection import Connection
 from msrest.authentication import BasicAuthentication
 from azure.devops.v7_0.release.models import ReleaseStartMetadata
+from openai.types.responses import ResponseTextDeltaEvent
 
 load_dotenv(find_dotenv())
 set_tracing_disabled(True)
@@ -132,21 +133,29 @@ How can I help you today?"""
 
 @cl.on_message
 async def main(message: cl.Message):
-    """Handle incoming messages"""
+    """Handle incoming messages with streaming"""
     # Get agent from session
     agent = cl.user_session.get("agent")
 
-    # Show loading message
+    # Create message for streaming
     msg = cl.Message(content="")
     await msg.send()
 
     try:
-        # Run the agent
-        result = Runner.run_sync(agent, message.content)
+        # Run the agent with streaming
+        output = Runner.run_streamed(
+            starting_agent=agent,
+            input=message.content,
+            max_turns=10
+        )
 
-        # Update message with result
-        msg.content = result.final_output
-        await msg.update()
+        # Stream the response
+        result_text = ""
+        async for event in output.stream_events():
+            if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                result_text += event.data.delta
+                msg.content = result_text
+                await msg.update()
 
     except Exception as e:
         # Handle errors
